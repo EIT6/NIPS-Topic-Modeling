@@ -23,57 +23,36 @@ from sklearn.cluster import KMeans
 #from scipy.spatial.distance import cdist
 import numpy as np
 
+###Tokenizer and stop words initialization
 tokenizer = RegexpTokenizer(r'\w+')
 en_stop = set(stopwords.words('english'))
 
+#Read Input File "papers.csv" for NIPS DataSet
+df1 = pd.read_csv("C:\\nips-papers\\papers.csv")
 
-df9 = pd.read_csv("C:\\papers.csv")
-
+#Cleaning the data
 texts = []
 # loop through document list
-for i in df9['paper_text']:
+for i in df1['paper_text']:
     
     # clean and tokenize document string
     raw = i.lower()
     tokens = tokenizer.tokenize(raw)
 
-    # remove stop words from tokens
+    # remove stop words from tokens and words less than 2 letters and remove numbers
     stopped_tokens = [i for i in tokens if (not i in en_stop and not str(i).isdigit() and len(str(i)) > 2 )]
     
-    # stem tokens
-    #stemmed_tokens = [p_stemmer.stem(i) for i in stopped_tokens]
     
     # add tokens to list
     texts.append(stopped_tokens)
     
-df9['Cleaned_PaperText'] = pd.Series(texts, index = df9.index)
-        
+df1['Cleaned_PaperText'] = pd.Series(texts, index = df1.index)
+
+#Transforming to TFIDF Matrix        
 vectorizer = TfidfVectorizer()
-X = vectorizer.fit_transform(df9.paper_text)
-#km = KMeans(n_clusters=10, init='k-means++', max_iter=100)
-#km.fit(X)
-#km1.labels_
+X = vectorizer.fit_transform(df1.paper_text)
 
-# k means determine k
-distortions = []
-K = range(1,10)
-for k in K:
-    kmeanModel = KMeans(n_clusters=k).fit(X)
-    kmeanModel.fit(X)
-    distortions.append(sum(np.min(cdist(X, kmeanModel.cluster_centers_, 'euclidean'), axis=1)) / X.shape[0])
- 
-### One more method for 
-
-for n_cluster in range(2, 11):
-    kmeans = KMeans(n_clusters=n_cluster).fit(X)
-    label = kmeans.labels_
-    sil_coeff = silhouette_score(X, label, metric='euclidean')
-    print("For n_clusters={}, The Silhouette Coefficient is {}".format(n_cluster, sil_coeff))
-##dictionary = corpora.Dictionary(texts)
-#corpus = [dictionary.doc2bow(text) for text in texts]
-#df9['Corpus'] = pd.Series(corpus, index = df9.index)
-
-##### Inertia error method
+##### Inertia error method - Loop to get error when number of clusters is set from 1-30
 cluster_range = range( 1, 30 )
 cluster_errors = []
 for num_clusters in cluster_range:
@@ -82,5 +61,7 @@ for num_clusters in cluster_range:
    cluster_errors.append( clusters.inertia_ )
 clusters_df = pd.DataFrame( { "num_clusters":cluster_range, "cluster_errors": cluster_errors } )
 
+##Plot the graph (Output)
 plt.figure(figsize=(12,6))
 plt.plot( clusters_df.num_clusters, clusters_df.cluster_errors, marker = "o" )
+plt.savefig("C:\\plot")
