@@ -20,12 +20,7 @@ df2 = pd.read_csv("C:\\nips-papers\\papers.csv")
 #Read the visualization file created by other module where Level 1 - Year-Range, Level 3 is Paper Title (Only these fields are used)
 df1 = pd.read_csv("C:\\visualizations.csv")
 
-##Cleaning Data for Topic Modeling
-tokenizer = RegexpTokenizer(r'\w+')
-en_stop = set(stopwords.words('english'))
-
-
-
+##Get the paper text for the given ID in Level3 from papers.csv Dataframe
 paper_text1 = []
 ids=[]
 for index, row in df1.iterrows():
@@ -35,25 +30,27 @@ for index, row in df1.iterrows():
 df1['Paper_ID'] = pd.Series(ids, index = df1.index)
 df1['Paper_text'] = pd.Series(paper_text1, index = df1.index)
 
-corpus = []
+###Tokenizer and stop words initialization
 tokenizer = RegexpTokenizer(r'\w+')
 en_stop = set(stopwords.words('english'))
+
+#Cleaning the data
 texts = []
-    ################################### Remove numbers and single letter words
-    # loop through document list
-for i in df1['Paper_text']:
-        
-        # clean and tokenize document string
+# loop through document list
+for i in df2['paper_text']:
+    
+    # clean and tokenize document string
     raw = i.lower()
     tokens = tokenizer.tokenize(raw)
-    
-        # remove stop words from tokens
+
+    # remove stop words from tokens and words less than 2 letters and remove numbers
     stopped_tokens = [i for i in tokens if (not i in en_stop and not str(i).isdigit() and len(str(i)) > 2 )]
-        
-        # add tokens to list
+    
+    
+    # add tokens to list
     texts.append(stopped_tokens)
     
-df1['Cleaned_PaperText'] = pd.Series(texts, index = df1.index)
+df2['Cleaned_PaperText'] = pd.Series(texts, index = df2.index)
 
 #Creating an empty column for holding the corpus data
 corpus1 =[]
